@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaserbeamMark Test Application</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            margin-bottom: 30px;
+        }
+        
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        canvas {
+            border: 2px solid #333;
+            background: #000;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        
+        .control-group h3 {
+            margin-top: 0;
+            color: #00ffff;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        label {
+            font-weight: bold;
+            min-width: 120px;
+        }
+        
+        input, select, button {
+            padding: 8px;
+            border: 1px solid #555;
+            background: #333;
+            color: #fff;
+            border-radius: 4px;
+        }
+        
+        input[type="color"] {
+            width: 60px;
+            height: 35px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        button {
+            background: #0066cc;
+            border: 1px solid #0077dd;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #0077dd;
+        }
+        
+        button:active {
+            background: #0055bb;
+        }
+        
+        .fire-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .fire-buttons button {
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .beam-style-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        
+        .beam-style-buttons button {
+            background: #444;
+            border: 1px solid #666;
+        }
+        
+        .beam-style-buttons button.active {
+            background: #00ffff;
+            color: #000;
+            border-color: #00ffff;
+        }
+        
+        .info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #00ffff;
+            margin-bottom: 20px;
+        }
+        
+        .demo-section {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .demo-section h3 {
+            color: #00ffff;
+            margin-top: 0;
+        }
+        
+        code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LaserbeamMark Test Application</h1>
+
+        
+        <div class="canvas-container">
+            <canvas id="laserCanvas" width="1280" height="400"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>Beam Styles</h3>
+                <div class="beam-style-buttons">
+                    <button data-style="solid" class="active">Solid</button>
+                    <button data-style="dashed">Dashed</button>
+                    <button data-style="crackling">Crackling</button>
+                    <button data-style="tazer">Tazer</button>
+                    <button data-style="pulsing">Pulsing</button>
+                    <button data-style="charged">Charged</button>
+                    <button data-style="plasma">Plasma</button>
+                    <button data-style="disruptor">Disruptor</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Fire Controls</h3>
+                <div class="fire-buttons">
+                    <button id="fireForward">Fire Forward</button>
+                    <button id="fireReverse">Fire Reverse</button>
+                    <button id="fireInstant">Fire Instant</button>
+                </div>
+                <div class="control-row">
+                    <label>Tip Style:</label>
+                    <select id="tipStyle">
+                        <option value="arrow">Arrow</option>
+                        <option value="circle">Circle</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Colors</h3>
+                <div class="control-row">
+                    <label>Beam Color:</label>
+                    <input type="color" id="beamColor" value="#00ffff">
+                </div>
+                <div class="control-row">
+                    <label>Glow Color:</label>
+                    <input type="color" id="glowColor" value="#00ffff">
+                </div>
+                <div class="control-row">
+                    <label>Tip Color:</label>
+                    <input type="color" id="tipColor" value="#ffffff">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Dimensions</h3>
+                <div class="control-row">
+                    <label>Beam Width:</label>
+                    <input type="range" id="beamWidth" min="1" max="20" value="4">
+                    <span id="beamWidthValue">4</span>
+                </div>
+                <div class="control-row">
+                    <label>Glow Size:</label>
+                    <input type="range" id="glowSize" min="5" max="50" value="24">
+                    <span id="glowSizeValue">24</span>
+                </div>
+                <div class="control-row">
+                    <label>Tip Size:</label>
+                    <input type="range" id="tipSize" min="5" max="50" value="24">
+                    <span id="tipSizeValue">24</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Timing</h3>
+                <div class="control-row">
+                    <label>Shoot Duration:</label>
+                    <input type="range" id="shootDuration" min="100" max="2000" value="800">
+                    <span id="shootDurationValue">800ms</span>
+                </div>
+                <div class="control-row">
+                    <label>Fade Duration:</label>
+                    <input type="range" id="fadeDuration" min="100" max="2000" value="800">
+                    <span id="fadeDurationValue">800ms</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Particles</h3>
+                <div class="control-row">
+                    <label>Particle Color:</label>
+                    <input type="color" id="particleColor" value="#ffffff">
+                </div>
+                <div class="control-row">
+                    <label>Particle Rate:</label>
+                    <input type="range" id="particleRate" min="0" max="1" step="0.1" value="0.8">
+                    <span id="particleRateValue">0.8</span>
+                </div>
+                <div class="control-row">
+                    <label>Particle Size:</label>
+                    <input type="range" id="particleSize" min="2" max="15" value="6">
+                    <span id="particleSizeValue">6</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h3>Preset Demonstrations</h3>
+            <div class="fire-buttons">
+                <button id="demoTazer">Tazer Strike</button>
+                <button id="demoPlasma">Plasma Cannon</button>
+                <button id="demoHotLaser">Hot Laser</button>
+                <button id="demoEnergyOrb">Energy Orb</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { LaserbeamMark } from './laserbeammark.js';
+        
+        class LaserTestApp {
+            constructor() {
+                this.canvas = document.getElementById('laserCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.laser = null;
+                this.currentStyle = 'solid';
+                this.lastTime = 0;
+                
+                this.initializeLaser();
+                this.setupControls();
+                this.startAnimationLoop();
+            }
+            
+            initializeLaser() {
+                this.laser = new LaserbeamMark(this.canvas, {
+                    beamStyle: this.currentStyle,
+                    coords1: [50, this.canvas.height / 2],
+                    coords2: [this.canvas.width - 50, this.canvas.height / 2],
+                    beamColor: '#00ffff',
+                    glowColor: '#00ffff',
+                    tipColor: '#ffffff',
+                    beamWidth: 4,
+                    glowSize: 24,
+                    tipSize: 24,
+                    tipStyle: 'arrow',
+                    shootDuration: 800,
+                    fadeDuration: 800,
+                    particleConfig: {
+                        color: '#ffffff',
+                        glowColor: '#00ffff',
+                        size: 6,
+                        speed: 3,
+                        life: 600,
+                        fade: true,
+                        rate: 0.8,
+                    }
+                });
+            }
+            
+            updateLaser() {
+                const options = {
+                    beamStyle: this.currentStyle,
+                    coords1: [50, this.canvas.height / 2],
+                    coords2: [this.canvas.width - 50, this.canvas.height / 2],
+                    beamColor: document.getElementById('beamColor').value,
+                    glowColor: document.getElementById('glowColor').value,
+                    tipColor: document.getElementById('tipColor').value,
+                    beamWidth: parseInt(document.getElementById('beamWidth').value),
+                    glowSize: parseInt(document.getElementById('glowSize').value),
+                    tipSize: parseInt(document.getElementById('tipSize').value),
+                    tipStyle: document.getElementById('tipStyle').value,
+                    shootDuration: parseInt(document.getElementById('shootDuration').value),
+                    fadeDuration: parseInt(document.getElementById('fadeDuration').value),
+                    particleConfig: {
+                        color: document.getElementById('particleColor').value,
+                        glowColor: document.getElementById('glowColor').value,
+                        size: parseInt(document.getElementById('particleSize').value),
+                        speed: 3,
+                        life: 600,
+                        fade: true,
+                        rate: parseFloat(document.getElementById('particleRate').value),
+                    }
+                };
+                
+                this.laser = new LaserbeamMark(this.canvas, options);
+            }
+            
+            setupControls() {
+                // Beam style buttons
+                document.querySelectorAll('[data-style]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        document.querySelectorAll('[data-style]').forEach(b => b.classList.remove('active'));
+                        button.classList.add('active');
+                        this.currentStyle = button.dataset.style;
+                        this.updateLaser();
+                    });
+                });
+                
+                // Fire buttons
+                document.getElementById('fireForward').addEventListener('click', () => {
+                    this.updateLaser();
+                    this.laser.fire(1);
+                });
+                
+                document.getElementById('fireReverse').addEventListener('click', () => {
+                    this.updateLaser();
+                    this.laser.fire(-1);
+                });
+                
+                document.getElementById('fireInstant').addEventListener('click', () => {
+                    this.updateLaser();
+                    this.laser.fire(0);
+                });
+                
+                // Range inputs with value display
+                this.setupRangeInput('beamWidth');
+                this.setupRangeInput('glowSize');
+                this.setupRangeInput('tipSize');
+                this.setupRangeInput('shootDuration', 'ms');
+                this.setupRangeInput('fadeDuration', 'ms');
+                this.setupRangeInput('particleRate');
+                this.setupRangeInput('particleSize');
+                
+                // Demo buttons
+                document.getElementById('demoTazer').addEventListener('click', () => {
+                    this.setPreset('tazer', '#ffffff', '#8888ff', '#ffff88', 6, 30);
+                });
+                
+                document.getElementById('demoPlasma').addEventListener('click', () => {
+                    this.setPreset('plasma', '#00ff88', '#00ff88', '#ffffff', 8, 25);
+                });
+                
+                document.getElementById('demoHotLaser').addEventListener('click', () => {
+                    this.setPreset('solid', '#ff4444', '#ff8888', '#ffff00', 4, 24);
+                });
+                
+                document.getElementById('demoEnergyOrb').addEventListener('click', () => {
+                    this.setPreset('charged', '#00ffff', '#00ffff', '#ffffff', 6, 20);
+                });
+            }
+            
+            setupRangeInput(id, suffix = '') {
+                const input = document.getElementById(id);
+                const valueSpan = document.getElementById(id + 'Value');
+                
+                input.addEventListener('input', () => {
+                    valueSpan.textContent = input.value + suffix;
+                });
+            }
+            
+            setPreset(style, beamColor, glowColor, tipColor, beamWidth, tipSize) {
+                // Update UI
+                document.querySelectorAll('[data-style]').forEach(b => b.classList.remove('active'));
+                document.querySelector(`[data-style="${style}"]`).classList.add('active');
+                
+                document.getElementById('beamColor').value = beamColor;
+                document.getElementById('glowColor').value = glowColor;
+                document.getElementById('tipColor').value = tipColor;
+                document.getElementById('beamWidth').value = beamWidth;
+                document.getElementById('tipSize').value = tipSize;
+                
+                // Update value displays
+                document.getElementById('beamWidthValue').textContent = beamWidth;
+                document.getElementById('tipSizeValue').textContent = tipSize;
+                
+                this.currentStyle = style;
+                this.updateLaser();
+                this.laser.fire(1);
+            }
+            
+            startAnimationLoop() {
+                const animate = (currentTime) => {
+                    const deltaTime = currentTime - this.lastTime;
+                    this.lastTime = currentTime;
+                    
+                    // Clear canvas
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    // Update and render laser
+                    if (this.laser) {
+                        this.laser.update(deltaTime);
+                        this.laser.render();
+                    }
+                    
+                    requestAnimationFrame(animate);
+                };
+                
+                requestAnimationFrame(animate);
+            }
+        }
+        
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new LaserTestApp();
+        });
+    </script>
+</body>
+</html>
