@@ -2,7 +2,7 @@
 
 A powerful JavaScript class for creating stunning laser beam effects with multiple visual styles, particle systems, smooth animations, and support for multiple simultaneous laser beams. Perfect for games, interactive applications, and visual effects.
 
-![LaserbeamMark Multi-Laser Demo](https://github.com/user-attachments/assets/d5775cfc-e01e-412b-a6be-09edca7b82c8)
+![LaserbeamMark Multi-Laser Demo](demo.png)
 
 ## Features
 
@@ -45,14 +45,14 @@ laserSystem.render();
 laserSystem.addLaser(1, {
   coords1: [50, 100],
   coords2: [400, 150],
-  beamColor: "#ff4444"
+  beamColor: "#ff4444",
 });
 
 laserSystem.addLaser(1, {
   coords1: [50, 200],
-  coords2: [400, 250], 
+  coords2: [400, 250],
   beamColor: "#44ff44",
-  beamStyle: "charged"
+  beamStyle: "charged",
 });
 
 // Backwards compatibility
