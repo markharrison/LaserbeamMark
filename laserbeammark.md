@@ -1,35 +1,108 @@
 # LaserbeamMark Class Documentation
 
-A configurable laser beam effect system with multiple visual styles, particle effects, and smooth animations.
+A configurable laser beam effect system with multiple visual styles, particle effects, smooth animations, and support for multiple simultaneous laser beams.
 
 ## Basic Usage
 
 ```javascript
 import { LaserbeamMark } from './lib/laserbeammark.js';
 
-// Create a laser beam
-const laser = new LaserbeamMark(canvas, {
+// Create a laser system (instantiate once)
+const laserSystem = new LaserbeamMark(canvas, {
     beamStyle: 'solid',
     coords1: [50, 100],
     coords2: [400, 100],
     beamColor: '#00ffff',
     glowColor: '#00ffff',
-    tipColor: '#ffffff', // Optional: different tip color
+    tipColor: '#ffffff',
     tipSize: 20,
 });
 
 // In your game loop
-laser.update(deltaTime);
-laser.render();
+laserSystem.update(deltaTime);
+laserSystem.render();
 
-// Fire the laser (coords1 to coords2)
-laser.fire(1);
+// Fire multiple lasers with different positions and settings
+laserSystem.addLaser(1, {
+    coords1: [0, 100],
+    coords2: [800, 100],
+    beamColor: '#ff0000'
+});
 
-// Fire the laser in reverse (coords2 to coords1)
-laser.fire(-1);
+laserSystem.addLaser(1, {
+    coords1: [0, 200], 
+    coords2: [800, 200],
+    beamColor: '#00ff00',
+    beamStyle: 'plasma'
+});
 
-// Instant appear then fade (no shooting animation)
-laser.fire(0);
+// Backwards compatibility - fire with default options
+laserSystem.fire(1);  // Still works!
+```
+
+## Multi-Laser System
+
+LaserbeamMark now supports multiple simultaneous laser beams following the ParticlesMark pattern:
+
+- **Single Instance**: Create one `LaserbeamMark` instance per canvas
+- **Multiple Lasers**: Use `addLaser()` to fire multiple beams with different positions and properties
+- **Automatic Management**: The system handles all active lasers automatically
+- **Memory Management**: Use `destroy()` to clean up all resources
+
+### Key Methods
+
+#### `addLaser(direction = 1, options = {})`
+
+Adds a new laser beam with custom options. Returns a unique laser ID.
+
+**Parameters:**
+- `direction` (number):
+  - `1` = fire from coords1 to coords2 (default)
+  - `-1` = fire from coords2 to coords1 (reverse)
+  - `0` = instant appear then fade (no shooting animation)
+- `options` (object): Laser-specific configuration (overrides defaults)
+
+```javascript
+// Fire laser with custom position and color
+const laserId = laserSystem.addLaser(1, {
+    coords1: [100, 50],
+    coords2: [700, 350],
+    beamColor: '#ff4444',
+    beamStyle: 'tazer'
+});
+```
+
+#### `removeLaser(id)`
+
+Removes a specific laser by ID. Returns `true` if laser was found and removed.
+
+```javascript
+laserSystem.removeLaser(laserId);
+```
+
+#### `getActiveLaserCount()`
+
+Returns the number of currently active laser beams.
+
+```javascript
+const count = laserSystem.getActiveLaserCount();
+console.log(`Active lasers: ${count}`);
+```
+
+#### `clearAllLasers()`
+
+Immediately removes all active laser beams.
+
+```javascript
+laserSystem.clearAllLasers();
+```
+
+#### `destroy()`
+
+Destroys the laser system and cleans up all resources. Call this when done with the laser system.
+
+```javascript
+laserSystem.destroy();
 ```
 
 ## Constructor Options
@@ -124,47 +197,103 @@ Simple circular tip that glows at the beam endpoint. More subtle than arrow tips
 
 ## Public Methods
 
-### `fire(direction = 1)`
+### `fire(direction = 1)` (Backwards Compatibility)
 
-Starts the laser beam animation with specified direction.
+Fires a laser beam using default options. This method is maintained for backwards compatibility.
 
 **Parameters:**
-
--   `direction` (number):
-    -   `1` = fire from coords1 to coords2 (default)
-    -   `-1` = fire from coords2 to coords1 (reverse)
-    -   `0` = instant appear then fade (no shooting animation)
+- `direction` (number): Same as `addLaser()` direction parameter
 
 ```javascript
-laser.fire(1); // Normal direction
-laser.fire(-1); // Reverse direction
-laser.fire(0); // Instant appear
-laser.fire(); // Default (same as fire(1))
+laserSystem.fire(1); // Normal direction
+laserSystem.fire(-1); // Reverse direction  
+laserSystem.fire(0); // Instant appear
+```
+
+### `addLaser(direction = 1, options = {})`
+
+Adds a new laser beam with custom options. This is the preferred method for the multi-laser system.
+
+**Returns:** Unique laser ID (number)
+
+```javascript
+// Basic usage
+const id = laserSystem.addLaser(1);
+
+// With custom options
+const id = laserSystem.addLaser(1, {
+    coords1: [0, 200],
+    coords2: [800, 200], 
+    beamColor: '#ff0000',
+    beamStyle: 'plasma'
+});
 ```
 
 ### `update(deltaTime)`
 
-Updates the laser animation. Call this every frame in your game loop.
+Updates all active laser animations. Call this every frame in your game loop.
 
 ```javascript
 // In your game loop
-laser.update(deltaTime);
+laserSystem.update(deltaTime);
 ```
 
 ### `render()`
 
-Renders the laser beam to the canvas. Call this after update() in your render loop.
+Renders all active laser beams to the canvas. Call this after update() in your render loop.
 
 ```javascript
 // In your render loop
-laser.render();
+laserSystem.render();
+```
+
+### `removeLaser(id)`
+
+Removes a specific laser by its ID.
+
+**Returns:** Boolean indicating success
+
+```javascript
+const success = laserSystem.removeLaser(laserId);
+```
+
+### `getActiveLaserCount()`
+
+Returns the number of currently active laser beams.
+
+**Returns:** Number of active lasers
+
+```javascript
+const count = laserSystem.getActiveLaserCount();
+```
+
+### `clearAllLasers()`
+
+Immediately removes all active laser beams.
+
+```javascript
+laserSystem.clearAllLasers();
+```
+
+### `destroy()`
+
+Destroys the laser system and cleans up all resources. Call when done with the system.
+
+```javascript
+laserSystem.destroy();
 ```
 
 ## Properties
 
+### `lasers` (readonly)
+
+Array of currently active laser objects.
+
+### For individual lasers:
+
 ### `active` (readonly)
 
-Boolean indicating if the laser is currently active (shooting or fading).
+Boolean indicating if a specific laser is currently active (shooting or fading).
 
 ### `phase` (readonly)
 
@@ -180,7 +309,88 @@ Current opacity from 1 to 0 during the fade phase.
 
 ## Examples
 
-### Basic Horizontal Laser
+### Multi-Laser System
+
+```javascript
+// Create the laser system once
+const laserSystem = new LaserbeamMark(canvas);
+
+// Fire multiple lasers at different positions
+laserSystem.addLaser(1, {
+    coords1: [0, 100],
+    coords2: [800, 100],
+    beamColor: '#ff0000',
+    beamStyle: 'solid'
+});
+
+laserSystem.addLaser(1, {
+    coords1: [0, 200], 
+    coords2: [800, 200],
+    beamColor: '#00ff00',
+    beamStyle: 'plasma'
+});
+
+laserSystem.addLaser(1, {
+    coords1: [0, 300],
+    coords2: [800, 300], 
+    beamColor: '#0000ff',
+    beamStyle: 'charged'
+});
+
+// All lasers animate simultaneously
+function gameLoop() {
+    laserSystem.update(deltaTime);
+    laserSystem.render();
+    requestAnimationFrame(gameLoop);
+}
+```
+
+### Crossfire Pattern
+
+```javascript
+const laserSystem = new LaserbeamMark(canvas);
+
+// Diagonal from top-left to bottom-right
+laserSystem.addLaser(1, {
+    coords1: [50, 50],
+    coords2: [750, 350],
+    beamStyle: 'tazer',
+    beamColor: '#ffffff'
+});
+
+// Diagonal from top-right to bottom-left (delayed)
+setTimeout(() => {
+    laserSystem.addLaser(1, {
+        coords1: [750, 50],
+        coords2: [50, 350],
+        beamStyle: 'crackling',
+        beamColor: '#ff88ff'
+    });
+}, 300);
+```
+
+### Rapid Fire Sequence
+
+```javascript
+const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff'];
+const styles = ['solid', 'plasma', 'charged', 'pulsing', 'disruptor'];
+
+for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+        const y = 200 + (i - 2) * 30; // Spread vertically
+        laserSystem.addLaser(1, {
+            coords1: [50, y],
+            coords2: [750, y],
+            beamStyle: styles[i],
+            beamColor: colors[i],
+            shootDuration: 600,
+            fadeDuration: 1000
+        });
+    }, i * 150);
+}
+```
+
+### Basic Horizontal Laser (Legacy Style)
 
 ```javascript
 const horizontalLaser = new LaserbeamMark(canvas, {
@@ -189,6 +399,9 @@ const horizontalLaser = new LaserbeamMark(canvas, {
     beamStyle: 'solid',
     beamColor: '#ff0000',
 });
+
+// Still works with backwards compatibility
+horizontalLaser.fire(1);
 ```
 
 ### Tazer Effect
@@ -282,12 +495,13 @@ const customLaser = new LaserbeamMark(canvas, {
 });
 ```
 
-## Integration Example
+### Integration Example
 
 ```javascript
 class GameScene {
     constructor() {
-        this.laser = new LaserbeamMark(this.canvas, {
+        // Create one laser system instance
+        this.laserSystem = new LaserbeamMark(this.canvas, {
             beamStyle: 'plasma',
             coords1: [50, 150],
             coords2: [750, 150],
@@ -296,34 +510,69 @@ class GameScene {
 
     handleInput(key) {
         if (key === 'Space') {
-            // Random direction
-            const direction = Math.random() < 0.5 ? 1 : -1;
-            this.laser.fire(direction);
+            // Fire laser with random vertical position
+            const y = 100 + Math.random() * 200;
+            this.laserSystem.addLaser(1, {
+                coords1: [50, y],
+                coords2: [750, y],
+                beamColor: this.getRandomColor()
+            });
         }
         if (key === 'Enter') {
-            // Instant mode
-            this.laser.fire(0);
+            // Crossfire pattern
+            this.fireCrossfire();
+        }
+        if (key === 'Escape') {
+            // Clear all lasers
+            this.laserSystem.clearAllLasers();
         }
     }
 
+    fireCrossfire() {
+        // Multiple diagonal lasers
+        this.laserSystem.addLaser(1, {
+            coords1: [0, 0],
+            coords2: [800, 400],
+            beamStyle: 'tazer'
+        });
+        
+        setTimeout(() => {
+            this.laserSystem.addLaser(1, {
+                coords1: [800, 0], 
+                coords2: [0, 400],
+                beamStyle: 'crackling'
+            });
+        }, 200);
+    }
+
     update(deltaTime) {
-        this.laser.update(deltaTime);
+        this.laserSystem.update(deltaTime);
     }
 
     render() {
         // Clear canvas, draw other objects...
-        this.laser.render();
+        this.laserSystem.render();
+        
+        // Show laser count
+        this.drawText(`Active Lasers: ${this.laserSystem.getActiveLaserCount()}`);
+    }
+
+    destroy() {
+        // Clean up when scene ends
+        this.laserSystem.destroy();
     }
 }
 ```
 
 ## Performance Notes
 
--   The laser automatically manages its particle system
--   Particles are cleaned up when they expire
--   The laser becomes inactive after the fade phase completes
+-   The laser system automatically manages multiple active laser beams
+-   Each laser manages its own particle system independently
+-   Particles are cleaned up automatically when they expire
+-   Lasers become inactive after the fade phase completes and are removed automatically
 -   Use reasonable particle rates (0.1 - 1.0) for good performance
--   Consider limiting the number of simultaneous laser instances
+-   The system is designed to handle dozens of simultaneous lasers efficiently
+-   Use `destroy()` to clean up all resources when done with the laser system
 
 ## Private Methods
 

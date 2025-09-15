@@ -281,6 +281,19 @@
                 <button id="demoEnergyOrb">Energy Orb</button>
             </div>
         </div>
+        
+        <div class="demo-section">
+            <h3>Multi-Laser Demonstrations</h3>
+            <div class="fire-buttons">
+                <button id="demoMultiLayer">Multi-Layer Barrage</button>
+                <button id="demoCrossfire">Crossfire Pattern</button>
+                <button id="demoRapidFire">Rapid Fire Sequence</button>
+                <button id="demoClearAll">Clear All Lasers</button>
+            </div>
+            <p style="margin-top: 10px; color: #888; font-size: 14px;">
+                Active Lasers: <span id="activeLaserCount">0</span>
+            </p>
+        </div>
     </div>
 
     <script type="module">
@@ -290,17 +303,17 @@
             constructor() {
                 this.canvas = document.getElementById('laserCanvas');
                 this.ctx = this.canvas.getContext('2d');
-                this.laser = null;
+                this.laserSystem = null;
                 this.currentStyle = 'solid';
                 this.lastTime = 0;
                 
-                this.initializeLaser();
+                this.initializeLaserSystem();
                 this.setupControls();
                 this.startAnimationLoop();
             }
             
-            initializeLaser() {
-                this.laser = new LaserbeamMark(this.canvas, {
+            initializeLaserSystem() {
+                this.laserSystem = new LaserbeamMark(this.canvas, {
                     beamStyle: this.currentStyle,
                     coords1: [50, this.canvas.height / 2],
                     coords2: [this.canvas.width - 50, this.canvas.height / 2],
@@ -325,11 +338,9 @@
                 });
             }
             
-            updateLaser() {
-                const options = {
+            getCurrentOptions() {
+                return {
                     beamStyle: this.currentStyle,
-                    coords1: [50, this.canvas.height / 2],
-                    coords2: [this.canvas.width - 50, this.canvas.height / 2],
                     beamColor: document.getElementById('beamColor').value,
                     glowColor: document.getElementById('glowColor').value,
                     tipColor: document.getElementById('tipColor').value,
@@ -349,8 +360,6 @@
                         rate: parseFloat(document.getElementById('particleRate').value),
                     }
                 };
-                
-                this.laser = new LaserbeamMark(this.canvas, options);
             }
             
             setupControls() {
@@ -360,24 +369,29 @@
                         document.querySelectorAll('[data-style]').forEach(b => b.classList.remove('active'));
                         button.classList.add('active');
                         this.currentStyle = button.dataset.style;
-                        this.updateLaser();
                     });
                 });
                 
-                // Fire buttons
+                // Fire buttons - now fire multiple lasers with different positions
                 document.getElementById('fireForward').addEventListener('click', () => {
-                    this.updateLaser();
-                    this.laser.fire(1);
+                    const options = this.getCurrentOptions();
+                    options.coords1 = [50, this.canvas.height / 2];
+                    options.coords2 = [this.canvas.width - 50, this.canvas.height / 2];
+                    this.laserSystem.addLaser(1, options);
                 });
                 
                 document.getElementById('fireReverse').addEventListener('click', () => {
-                    this.updateLaser();
-                    this.laser.fire(-1);
+                    const options = this.getCurrentOptions();
+                    options.coords1 = [50, this.canvas.height / 2];
+                    options.coords2 = [this.canvas.width - 50, this.canvas.height / 2];
+                    this.laserSystem.addLaser(-1, options);
                 });
                 
                 document.getElementById('fireInstant').addEventListener('click', () => {
-                    this.updateLaser();
-                    this.laser.fire(0);
+                    const options = this.getCurrentOptions();
+                    options.coords1 = [50, this.canvas.height / 2];
+                    options.coords2 = [this.canvas.width - 50, this.canvas.height / 2];
+                    this.laserSystem.addLaser(0, options);
                 });
                 
                 // Range inputs with value display
@@ -389,7 +403,7 @@
                 this.setupRangeInput('particleRate');
                 this.setupRangeInput('particleSize');
                 
-                // Demo buttons
+                // Demo buttons - now fire multiple different lasers
                 document.getElementById('demoTazer').addEventListener('click', () => {
                     this.setPreset('tazer', '#ffffff', '#8888ff', '#ffff88', 6, 30);
                 });
@@ -405,6 +419,114 @@
                 document.getElementById('demoEnergyOrb').addEventListener('click', () => {
                     this.setPreset('charged', '#00ffff', '#00ffff', '#ffffff', 6, 20);
                 });
+                
+                // Multi-laser demo buttons
+                document.getElementById('demoMultiLayer').addEventListener('click', () => {
+                    this.demoMultiLayer();
+                });
+                
+                document.getElementById('demoCrossfire').addEventListener('click', () => {
+                    this.demoCrossfire();
+                });
+                
+                document.getElementById('demoRapidFire').addEventListener('click', () => {
+                    this.demoRapidFire();
+                });
+                
+                document.getElementById('demoClearAll').addEventListener('click', () => {
+                    this.laserSystem.clearAllLasers();
+                });
+            }
+            
+            demoMultiLayer() {
+                // Fire 3 lasers at different vertical positions
+                const centerY = this.canvas.height / 2;
+                const spacing = 60;
+                
+                // Top laser - red
+                this.laserSystem.addLaser(1, {
+                    coords1: [50, centerY - spacing],
+                    coords2: [this.canvas.width - 50, centerY - spacing],
+                    beamStyle: 'solid',
+                    beamColor: '#ff4444',
+                    glowColor: '#ff8888',
+                    tipColor: '#ffff00'
+                });
+                
+                // Middle laser - blue (delayed)
+                setTimeout(() => {
+                    this.laserSystem.addLaser(1, {
+                        coords1: [50, centerY],
+                        coords2: [this.canvas.width - 50, centerY],
+                        beamStyle: 'plasma',
+                        beamColor: '#00ffff',
+                        glowColor: '#00ffff',
+                        tipColor: '#ffffff'
+                    });
+                }, 200);
+                
+                // Bottom laser - green (more delayed)
+                setTimeout(() => {
+                    this.laserSystem.addLaser(1, {
+                        coords1: [50, centerY + spacing],
+                        coords2: [this.canvas.width - 50, centerY + spacing],
+                        beamStyle: 'charged',
+                        beamColor: '#00ff88',
+                        glowColor: '#00ff88',
+                        tipColor: '#ffffff'
+                    });
+                }, 400);
+            }
+            
+            demoCrossfire() {
+                // Fire lasers from different corners
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                
+                // Diagonal from top-left to bottom-right
+                this.laserSystem.addLaser(1, {
+                    coords1: [50, 50],
+                    coords2: [this.canvas.width - 50, this.canvas.height - 50],
+                    beamStyle: 'tazer',
+                    beamColor: '#ffffff',
+                    glowColor: '#8888ff',
+                    tipColor: '#ffff88'
+                });
+                
+                // Diagonal from top-right to bottom-left (delayed)
+                setTimeout(() => {
+                    this.laserSystem.addLaser(1, {
+                        coords1: [this.canvas.width - 50, 50],
+                        coords2: [50, this.canvas.height - 50],
+                        beamStyle: 'crackling',
+                        beamColor: '#ff88ff',
+                        glowColor: '#ff88ff',
+                        tipColor: '#ffffff'
+                    });
+                }, 300);
+            }
+            
+            demoRapidFire() {
+                // Fire a sequence of lasers with slight delays
+                const centerY = this.canvas.height / 2;
+                const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff'];
+                const styles = ['solid', 'plasma', 'charged', 'pulsing', 'disruptor'];
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const y = centerY + (i - 2) * 30; // Spread vertically
+                        this.laserSystem.addLaser(1, {
+                            coords1: [50, y],
+                            coords2: [this.canvas.width - 50, y],
+                            beamStyle: styles[i],
+                            beamColor: colors[i],
+                            glowColor: colors[i],
+                            tipColor: '#ffffff',
+                            shootDuration: 600,
+                            fadeDuration: 1000
+                        });
+                    }, i * 150);
+                }
             }
             
             setupRangeInput(id, suffix = '') {
@@ -432,8 +554,12 @@
                 document.getElementById('tipSizeValue').textContent = tipSize;
                 
                 this.currentStyle = style;
-                this.updateLaser();
-                this.laser.fire(1);
+                
+                // Fire laser with current settings
+                const options = this.getCurrentOptions();
+                options.coords1 = [50, this.canvas.height / 2];
+                options.coords2 = [this.canvas.width - 50, this.canvas.height / 2];
+                this.laserSystem.addLaser(1, options);
             }
             
             startAnimationLoop() {
@@ -445,10 +571,14 @@
                     this.ctx.fillStyle = '#000000';
                     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
                     
-                    // Update and render laser
-                    if (this.laser) {
-                        this.laser.update(deltaTime);
-                        this.laser.render();
+                    // Update and render laser system
+                    if (this.laserSystem) {
+                        this.laserSystem.update(deltaTime);
+                        this.laserSystem.render();
+                        
+                        // Update active laser count
+                        const activeCount = this.laserSystem.getActiveLaserCount();
+                        document.getElementById('activeLaserCount').textContent = activeCount;
                     }
                     
                     requestAnimationFrame(animate);
