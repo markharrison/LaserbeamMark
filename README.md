@@ -1,8 +1,8 @@
 # LaserbeamMark
 
-A powerful JavaScript class for creating stunning laser beam effects with multiple visual styles, particle systems, and smooth animations. Perfect for games, interactive applications, and visual effects.
+A powerful JavaScript class for creating stunning laser beam effects with multiple visual styles, particle systems, smooth animations, and support for multiple simultaneous laser beams. Perfect for games, interactive applications, and visual effects.
 
-![LaserbeamMark Demo - Wider Canvas](demo.png)
+![LaserbeamMark Multi-Laser Demo](https://github.com/user-attachments/assets/d5775cfc-e01e-412b-a6be-09edca7b82c8)
 
 ## Features
 
@@ -13,7 +13,9 @@ A powerful JavaScript class for creating stunning laser beam effects with multip
 🎯 **Tip Styles**: Arrow and circle tip options  
 📏 **Flexible Dimensions**: Adjustable beam width, glow size, and tip size  
 ⏱️ **Timing Controls**: Configurable shoot and fade durations  
-🖱️ **Interactive Demo**: Complete web-based test application
+🚀 **Multi-Laser Support**: Multiple simultaneous laser beams with different positions and properties  
+🧹 **Memory Management**: Proper resource cleanup with `destroy()` method  
+🖱️ **Interactive Demo**: Complete web-based test application with multi-laser demonstrations
 
 ## Quick Start
 
@@ -28,21 +30,33 @@ import { LaserbeamMark } from "./laserbeammark.js";
 ### Basic Usage
 
 ```javascript
-// Create a laser beam
-const laser = new LaserbeamMark(canvas, {
-  beamStyle: "tazer",
-  coords1: [50, 100],
-  coords2: [400, 100],
+// Create a laser system (instantiate once)
+const laserSystem = new LaserbeamMark(canvas, {
+  beamStyle: "plasma",
   beamColor: "#00ffff",
   glowColor: "#00ffff",
 });
 
 // In your game loop
-laser.update(deltaTime);
-laser.render();
+laserSystem.update(deltaTime);
+laserSystem.render();
 
-// Fire the laser
-laser.fire(1); // Forward direction
+// Fire multiple lasers at different positions
+laserSystem.addLaser(1, {
+  coords1: [50, 100],
+  coords2: [400, 150],
+  beamColor: "#ff4444"
+});
+
+laserSystem.addLaser(1, {
+  coords1: [50, 200],
+  coords2: [400, 250], 
+  beamColor: "#44ff44",
+  beamStyle: "charged"
+});
+
+// Backwards compatibility
+laserSystem.fire(1); // Still works!
 ```
 
 ## Interactive Demo
@@ -61,6 +75,11 @@ The demo features:
 - **Real-time Controls**: Adjust colors, dimensions, timing, and particles
 - **Fire Controls**: Test different firing modes and tip styles
 - **Preset Demonstrations**: Quick-access buttons for common configurations
+- **Multi-Laser Demos**: Showcase multiple simultaneous laser beams
+  - **Multi-Layer Barrage**: Three lasers at different heights with staggered timing
+  - **Crossfire Pattern**: Diagonal lasers from opposite corners
+  - **Rapid Fire Sequence**: Sequential laser burst with different colors and styles
+- **Active Laser Counter**: Real-time display of active laser count
 
 ## Documentation
 
